@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const customers = [
   { id:  1, name: "Max",     balance: 100 },
@@ -21,6 +21,17 @@ app.get("/", (req, res) => {
 
 app.get("/customers", (req, res) => {
   res.json(customers);
+});
+
+app.get("/customers/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const customer = customers.find(c => c.id === id)
+
+  if (!customer) {
+    return res.status(404).json({ error: "Customer not found" });
+  }
+
+  res.json(customer);
 });
 
 app.listen(port, () => {
