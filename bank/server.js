@@ -51,6 +51,23 @@ app.post("/customers", (req, res) => {
   res.status(201).json(newCustomer);
 });
 
+app.put("/customers/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { name, balance } = req.body;
+
+  if (!name || !balance) {
+    return res.status(400).json({ error: "Name and balance are required!" });
+  }
+
+  const pos = customers.findIndex(c => c.id === id);
+  if (pos === -1) {
+    return res.status(404).json({ error: "Customer not found" });
+  }
+
+  customers[pos] = { id, name, balance };
+  res.json(customers[pos]);
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
