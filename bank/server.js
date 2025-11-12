@@ -68,6 +68,21 @@ app.put("/customers/:id", (req, res) => {
   res.json(customers[pos]);
 });
 
+app.patch("/customers/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { name, balance } = req.body;
+
+  const customer = customers.find(c => c.id === id);
+  if (!customer) {
+    return res.status(404).json({ error: "Customer not found" });
+  }
+
+  if (name !== undefined) customer.name = name;
+  if (balance !== undefined) customer.balance = balance;
+
+  res.json(customer);
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
