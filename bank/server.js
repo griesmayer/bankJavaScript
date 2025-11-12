@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
+app.use(express.json());
 
 const customers = [
   { id:  1, name: "Max",     balance: 100 },
@@ -32,6 +33,22 @@ app.get("/customers/:id", (req, res) => {
   }
 
   res.json(customer);
+});
+
+app.post("/customers", (req, res) => {
+  const { name, balance } = req.body;
+
+  if (!name || !balance) {
+    return res.status(400).json({ error: "Name and balance are required!" });
+  }
+
+  const newId = customers.length ? customers[customers.length - 1].id + 1 : 1;
+
+  const newCustomer = { id: newId, name, balance };
+
+  customers.push(newCustomer);
+
+  res.status(201).json(newCustomer);
 });
 
 app.listen(port, () => {
