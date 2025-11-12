@@ -83,6 +83,18 @@ app.patch("/customers/:id", (req, res) => {
   res.json(customer);
 });
 
+app.delete("/customers/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const pos = customers.findIndex(c => c.id === id);
+
+  if (pos === -1) {
+    return res.status(404).json({ error: "Customer not found" });
+  }
+
+  customers.splice(pos, 1);
+  return res.status(204).send(); // No Content
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
