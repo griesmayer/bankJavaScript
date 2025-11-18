@@ -3,6 +3,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
 const customers = [
   { id:  1, name: "Max",     balance: 100 },
   { id:  2, name: "Susi",    balance: 300 },
