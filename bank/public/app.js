@@ -40,5 +40,46 @@ async function fetchCustomers() {
   }
 }
 
+async function addClick() {
+    const nameInput   = document.getElementById("customer-name");
+    const name = nameInput.value.trim();
+    const banlanceInput = document.getElementById("balance");
+    const balance = parseFloat(banlanceInput.value);
+    const button = document.getElementById("add-btn");
+    const statusEl = document.getElementById("status");
+
+    if (!name || !balance) {
+      statusEl.textContent = "Name and balance is required.";
+      return;
+    }
+
+    button.disabled = true;
+    await addCustomer(name, balance);
+    button.disabled = false;
+
+    nameInput.value = "";
+    banlanceInput.value = "";
+    nameInput.focus();
+}
+
+async function addCustomer(name, balance) {
+  const statusEl = document.getElementById("status");
+  try {
+    const res = await fetch("/customers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, balance }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await fetchCustomers();
+    statusEl.textContent = "Customer added.";
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = `Error while adding a customer: ${err.message}`;
+  }
+}
+
+
+
 // When page isloaded the fetchStudents is called
 window.addEventListener("DOMContentLoaded", fetchCustomers);
