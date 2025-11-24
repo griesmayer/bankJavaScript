@@ -1,3 +1,5 @@
+let editingId = null;
+
 async function fetchCustomers() {
   const statusEl = document.getElementById("status");
   const tbody = document.querySelector("#account-table tbody");
@@ -24,21 +26,78 @@ async function fetchCustomers() {
       tdId.textContent = c.id;
 
       const tdName = document.createElement("td");
-      tdName.textContent = c.name;
 
       const tdBalance = document.createElement("td");
-      tdBalance.textContent = c.balance;
 
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "Delete";
-      delBtn.className = "delete-btn";
-      delBtn.onclick = async () => {
-        if (!confirm(`Remove customer ${c.name}?`)) return;
-        await deleteCustomer(c.id);
-        await fetchCustomers();
+      const tdActions = document.createElement("td");
+
+      if (editingId === c.id) {
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = c.name;
+        nameInput.className = "input-sm";
+
+        const balanceInput = document.createElement("input");
+        balanceInput.type = "number";
+        balanceInput.value = c.balance;
+        balanceInput.className = "input-sm";
+
+        tdName.appendChild(nameInput);
+        tdBalance.appendChild(balanceInput);
+
+        
+
+
+
+        const okBtn = document.createElement("button");
+        okBtn.textContent = "OK";
+        okBtn.className = "ok-btn";
+        okBtn.onclick = async () => {
+          if (!nameInput.value.trim() || !balanceInput.value.trim()) {
+            document.getElementById("status").textContent = "Name and balance are required!";
+            return;
+          }
+          await updateCustomer (c.id,
+                  { name : nameInput.value.trim(),
+                    balance : balanceInput.value.trim() });
+          editingId = null;
+          await fetchCustomers();
+        }
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.className = "cancel-btn";
+        cancelBtn.onclick = async () => {
+          editingId = null;
+          await fetchCustomers();
+        };
+
+        tdActions.append(okBtn, " ", cancelBtn);
+
+      } else {
+        tdName.textContent = c.name;
+        tdBalance.textContent = c.balance;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = async () => {
+          if (!confirm(`Remove customer ${c.name}?`)) return;
+          await deleteCustomer(c.id);
+          await fetchCustomers();
+        }
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.className = "edit-btn";
+        editBtn.onclick = async () => {
+          editingId = c.id;
+          await fetchCustomers();
+        }
+        tdActions.append(delBtn, " ", editBtn);
       }
 
-      tr.append(tdId, tdName, tdBalance, delBtn);
+      tr.append(tdId, tdName, tdBalance, tdActions);
       tbody.appendChild(tr);
     }
 
@@ -100,6 +159,25 @@ async function deleteCustomer(id) {
   } catch (err) {
     console.error(err);
     statusEl.textContent = `Error while removing: ${id}`;
+  }
+}
+
+async function updateCustomer(id, data) {
+  const statusEl = document.getElementById("status");
+  try {
+    const res = await fetch(`/customers/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const msg = await res.json().catch(() => ({}));
+      throw new Error(msg.error || `HTTP ${res.status}`);
+    }
+    statusEl.textContent = `Customer ${id} updated.`;
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = `Error while updating: ${err.message}`;
   }
 }
 
