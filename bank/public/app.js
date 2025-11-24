@@ -29,7 +29,16 @@ async function fetchCustomers() {
       const tdBalance = document.createElement("td");
       tdBalance.textContent = c.balance;
 
-      tr.append(tdId, tdName, tdBalance);
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.className = "delete-btn";
+      delBtn.onclick = async () => {
+        if (!confirm(`Remove customer ${c.name}?`)) return;
+        await deleteCustomer(c.id);
+        await fetchCustomers();
+      }
+
+      tr.append(tdId, tdName, tdBalance, delBtn);
       tbody.appendChild(tr);
     }
 
@@ -79,7 +88,20 @@ async function addCustomer(name, balance) {
   }
 }
 
-
+async function deleteCustomer(id) {
+  const statusEl = document.getElementById("status");
+  try {
+    const res = await fetch(`/customers/${id}`, { method: "DELETE" });
+    if (res.status == 204) {
+      statusEl.textContent = `Customer ${id} removed`;
+    } else {
+      throw new Error(msg.error || `HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = `Error while removing: ${id}`;
+  }
+}
 
 // When page isloaded the fetchStudents is called
 window.addEventListener("DOMContentLoaded", fetchCustomers);
